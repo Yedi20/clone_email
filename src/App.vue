@@ -1,14 +1,49 @@
 <template>
-  <h1>VMail Inbox</h1>
+  <h1>Leo-Mail Inbox</h1>
+
+  <Suspense>
+  <template #default>
+    <MailTable/>
+  </template>
+
+  <template #fallback>
+      
+  Cargando...
+  </template>
+  </Suspense>
+
+  <table class="mail-table">
+  <tbody>
+    <tr v-for="email in UnarChivedEmails" 
+    :key="email.id"
+    :class="['clickable', email.read ? 'read' :'']"
+    @click="email.red = true">
+     <td>
+      <input type="checkbox"/>
+     </td>
+     <td>{{email.from}}</td>
+      <td>
+        <p>  <strong>  {{email.subject}} </strong> - {{email.body}}</p> 
+      </td>
+       <td class="date">
+        {{format(new Date(email.sentAt), 'MM do yyyy')}}
+       </td>
+      <td> <button @click="email.archived = true">Archived</button></td>
+    </tr>
+  </tbody>
+  </table>
 </template>
   
 <script>
+import {format} from 'date-fns';
+
 
 export default {
   name: 'App',
-  data(){
+  async setup(){
     return {
-      "emails": [
+      format,
+      emails: [
         {
           "id": 1,
           "from": "team@vuemastery.com",
@@ -46,6 +81,16 @@ export default {
           "read": false
         }
       ]
+    }
+  },
+  computed: {
+    sortedEmails(){
+      return  this.emails.sort((e1, e2) =>{
+        return e1.sentAt < e2.sentAt ? 1: -1
+      })
+    },
+    UnarChivedEmails(){
+      return this.sortedEmails.filter(e => !e.archived)
     }
   }
 };
